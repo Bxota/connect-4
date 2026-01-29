@@ -1,0 +1,16 @@
+services:
+  app:
+    image: ghcr.io/bxota/connect-4:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - ADDR=:8080
+      - WEB_DIR=/app/web
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-power-4.bxota.com}
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
