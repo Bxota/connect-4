@@ -61,6 +61,13 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             docker network inspect web >/dev/null 2>&1 || docker network create web
-            cd /opt/connect-4
+            if [ -f /opt/connect-4/docker-compose.yml ]; then
+              cd /opt/connect-4
+            elif [ -f /opt/connect-4/deploy/docker-compose.yml ]; then
+              cd /opt/connect-4/deploy
+            else
+              echo "docker-compose.yml not found under /opt/connect-4" >&2
+              exit 1
+            fi
             docker compose pull
             docker compose up -d
