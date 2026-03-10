@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Background rounded square, dark navy -->
+  <rect x="0" y="0" width="32" height="32" rx="7" fill="#1e2d4a"/>
+
+  <!-- Subtle inner glow / gradient overlay -->
+  <rect x="0" y="0" width="32" height="32" rx="7" fill="url(#bg-grad)" opacity="0.5"/>
+
+  <defs>
+    <radialGradient id="bg-grad" cx="40%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#2a4070"/>
+      <stop offset="100%" stop-color="#0f1a2e"/>
+    </radialGradient>
+
+    <!-- Red disc shading -->
+    <radialGradient id="red-grad" cx="38%" cy="35%" r="55%">
+      <stop offset="0%" stop-color="#ff8a8a"/>
+      <stop offset="100%" stop-color="#e8445a"/>
+    </radialGradient>
+
+    <!-- Yellow disc shading -->
+    <radialGradient id="yellow-grad" cx="38%" cy="35%" r="55%">
+      <stop offset="0%" stop-color="#ffe580"/>
+      <stop offset="100%" stop-color="#f5c030"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Red disc (top-left) -->
+  <circle cx="12.5" cy="13.5" r="7.5" fill="url(#red-grad)"/>
+  <!-- Highlight -->
+  <circle cx="10.5" cy="11.5" r="2.2" fill="white" opacity="0.18"/>
+
+  <!-- Yellow disc (bottom-right) -->
+  <circle cx="20.5" cy="20.5" r="7.5" fill="url(#yellow-grad)"/>
+  <!-- Highlight -->
+  <circle cx="18.5" cy="18.5" r="2.2" fill="white" opacity="0.2"/>
+</svg>
