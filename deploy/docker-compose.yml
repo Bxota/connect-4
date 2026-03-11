@@ -9,8 +9,11 @@ services:
       - WEB_DIR=/app/web
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-power-4.bxota.com}
     networks:
-      - web
+      caddy_net:
+        aliases:
+          - connect4_app
 
 networks:
-  web:
+  caddy_net:
+    name: caddy_net
     external: true
