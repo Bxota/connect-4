@@ -13,6 +13,14 @@
       <button class="muted small" style="background: none; border: none; cursor: pointer;" @click="copyCode">
         Copier le code
       </button>
+      <button
+        v-if="hasShareLink"
+        class="muted small"
+        style="background: none; border: none; cursor: pointer;"
+        @click="shareRoomLink"
+      >
+        Envoyer le lien
+      </button>
       <button class="muted small" style="background: none; border: none; cursor: pointer;" @click="copyShareLink">
         Copier le lien
       </button>
@@ -171,6 +179,8 @@ const shareLink = computed(() => {
   return `${window.location.origin}/game?code=${encodeURIComponent(game.state.roomCode)}`;
 });
 
+const hasShareLink = computed(() => Boolean(shareLink.value));
+
 const bothPlayersConnected = computed(() => isPlayerConnected('R') && isPlayerConnected('Y'));
 const showRematch = computed(() => {
   const status = state.value?.status ?? '';
@@ -200,7 +210,7 @@ const copyCode = async (): Promise<void> => {
   try {
     await navigator.clipboard.writeText(roomCode.value);
   } catch (error) {
-    // no-op
+    console.error(error);
   }
 };
 
@@ -211,7 +221,29 @@ const copyShareLink = async (): Promise<void> => {
   try {
     await navigator.clipboard.writeText(shareLink.value);
   } catch (error) {
-    // no-op
+    console.error(error);
+  }
+};
+
+const shareRoomLink = async (): Promise<void> => {
+  if (!shareLink.value) {
+    return;
+  }
+  try {
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      await navigator.share({
+        title: 'Puissance 4',
+        text: `Rejoins mon salon ${roomCode.value}`,
+        url: shareLink.value,
+      });
+      return;
+    }
+    await copyShareLink();
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return;
+    }
+    console.error(error);
   }
 };
 
