@@ -1,33 +1,28 @@
-name: Build, push, deploy
+name: Deploy
 
 on:
   push:
-    branches:
-      - main
-      - master
-    tags:
-      - "v*"
+    branches: [main, master]
+    tags: ["v*"]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  packages: write
+env:
+  SERVICE: connect-4
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -43,8 +38,7 @@ jobs:
             type=sha,format=short
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push
-        uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
@@ -53,6 +47,13 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Copy docker-compose to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -60,16 +61,13 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "deploy/docker-compose.yml"
-          target: /opt/connect-4
+          target: /opt/${{ env.SERVICE }}
           strip_components: 1
 
-      - name: Deploy on VPS
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Trigger infra deploy
+        uses: peter-evans/repository-dispatch@v3
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /opt/connect-4
-            docker compose pull
-            docker compose up -d
+          token: ${{ secrets.INFRA_DISPATCH_TOKEN }}
+          repository: Bxota/caddy-vps
+          event-type: deploy
+          client-payload: '{"service": "${{ env.SERVICE }}", "doppler": "false"}'
